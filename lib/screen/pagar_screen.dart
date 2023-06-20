@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:appbancocliente/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class PagarScreen extends StatefulWidget {
   const PagarScreen({Key? key}) : super(key: key);
@@ -110,7 +113,8 @@ class _PagarScreenState extends State<PagarScreen> {
                       r'^\d+\.?\d{0,2}$'), // Expresión regular para números con hasta 2 decimales
                 ),
               ],
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: 'Monto',
                 border: OutlineInputBorder(),
@@ -123,6 +127,95 @@ class _PagarScreenState extends State<PagarScreen> {
                 labelText: 'Cuenta Destino',
                 border:
                     OutlineInputBorder(), // Agregar un borde al campo de texto
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                // Escanear el código QR
+                String? qrResult = await scanner.scan();
+
+                // Verificar si se obtuvo un resultado del escaneo
+                if (qrResult != null) {
+                  // Obtener los valores del código QR
+                  final qrData = json.decode(qrResult);
+
+                  // Verificar si los datos del código QR son válidos
+                  if (qrData != null && qrData is Map<String, dynamic>) {
+                    final montoFromQR = qrData['monto'] as String?;
+                    final cuentaDestinoFromQR = qrData['nroCuentaDestino'];
+
+                    if (montoFromQR != null && cuentaDestinoFromQR != null) {
+                      // Asignar los valores del código QR a las variables correspondientes
+                      setState(() {
+                        montoController.text = montoFromQR;
+                        cuentaDestinoController.text =
+                            cuentaDestinoFromQR.toString();
+                      });
+
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Código QR Escaneado'),
+                          content: Text('¡Escaneo exitoso!'),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Cerrar el diálogo
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text(
+                              'El código QR no contiene los datos esperados.'),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Cerrar el diálogo
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Error'),
+                        content: const Text(
+                            'El código QR no contiene los datos esperados.'),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context); // Cerrar el diálogo
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                padding: const EdgeInsets.all(16.0),
+              ),
+              child: const Text(
+                'Leer QR',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -204,7 +297,6 @@ class _PagarScreenState extends State<PagarScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 padding: const EdgeInsets.all(16.0),
-               
               ),
               child: const Text(
                 'Realizar Pago',

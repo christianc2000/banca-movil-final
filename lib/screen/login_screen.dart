@@ -89,12 +89,17 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
-                  onPressed: () => _login(context),
+                  onPressed: isLoading ? null : () => _login(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],
                     foregroundColor: Colors.white, // Texto en color blanco
                   ),
-                  child: const Text('Iniciar sesión'),
+                  child: Text(
+                    'Iniciar sesión',
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ],
             ),

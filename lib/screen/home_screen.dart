@@ -57,7 +57,7 @@ class HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           _buildButton(
             context,
-            'Movimiento',
+            'Movimientos',
             Icons.compare_arrows,
             colorScheme.primary,
             () {
